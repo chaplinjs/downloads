@@ -1,8 +1,8 @@
 {
   "name": "chaplin",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "main": "amd/chaplin.js",
   "dependencies": {
-    "backbone": ">= 0.9.10"
+    "backbone": ">= 1.0.0"
   }
 }
