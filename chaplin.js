@@ -1,5 +1,5 @@
 /*!
- * Chaplin 0.11.2
+ * Chaplin 0.11.3
  *
  * Chaplin may be freely distributed under the MIT license.
  * For all details and documentation:
@@ -1009,12 +1009,12 @@ module.exports = Layout = (function(_super) {
   };
 
   Layout.prototype.regionByName = function(name) {
-    var region, _i, _len, _ref;
+    var reg, _i, _len, _ref;
     _ref = this.globalRegions;
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      region = _ref[_i];
-      if (region.name === name && !region.instance.stale) {
-        return region;
+      reg = _ref[_i];
+      if (reg.name === name && !reg.instance.stale) {
+        return reg;
       }
     }
   };
@@ -1686,7 +1686,7 @@ module.exports = CollectionView = (function(_super) {
     if ($) {
       view.$el.stop(true, true);
     }
-    return toggleElement(view.el, included);
+    return toggleElement(($ ? view.$el : view.el), included);
   };
 
   CollectionView.prototype.visibleItems = null;
@@ -2417,8 +2417,7 @@ module.exports = Router = (function() {
 
 var Backbone, History, isExplorer, rootStripper, routeStripper, trailingSlash, _,
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 _ = loader('underscore');
 
@@ -2432,7 +2431,7 @@ isExplorer = /msie [\w.]+/;
 
 trailingSlash = /\/$/;
 
-module.exports = History = (function(_super) {
+History = (function(_super) {
 
   __extends(History, _super);
 
@@ -2457,7 +2456,7 @@ module.exports = History = (function(_super) {
   };
 
   History.prototype.start = function(options) {
-    var atRoot, docMode, fragment, loc, oldIE;
+    var atRoot, fragment, loc;
     if (Backbone.History.started) {
       throw new Error('Backbone.history has already been started');
     }
@@ -2467,19 +2466,13 @@ module.exports = History = (function(_super) {
     }, this.options, options);
     this.root = this.options.root;
     this._wantsHashChange = this.options.hashChange !== false;
-    this._wantsPushState = !!this.options.pushState;
-    this._hasPushState = !!(this.options.pushState && this.history && this.history.pushState);
+    this._wantsPushState = Boolean(this.options.pushState);
+    this._hasPushState = Boolean(this.options.pushState && this.history && this.history.pushState);
     fragment = this.getFragment();
-    docMode = document.documentMode;
-    oldIE = isExplorer.exec(navigator.userAgent.toLowerCase()) && (!docMode || docMode <= 7);
     this.root = ('/' + this.root + '/').replace(rootStripper, '/');
-    if (oldIE && this._wantsHashChange) {
-      this.iframe = Backbone.$('<iframe src="javascript:0" tabindex="-1" />').hide().appendTo('body')[0].contentWindow;
-      this.navigate(fragment);
-    }
     if (this._hasPushState) {
       Backbone.$(window).on('popstate', this.checkUrl);
-    } else if (this._wantsHashChange && __indexOf.call(window, 'onhashchange') >= 0 && !oldIE) {
+    } else if (this._wantsHashChange && 'onhashchange' in window) {
       Backbone.$(window).on('hashchange', this.checkUrl);
     } else if (this._wantsHashChange) {
       this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
@@ -2503,6 +2496,8 @@ module.exports = History = (function(_super) {
   return History;
 
 })(Backbone.History);
+
+module.exports = Backbone.$ ? History : Backbone.History;
 
 });;loader.register('chaplin/lib/delayer', function(e, r, module) {
 'use strict';
@@ -2658,7 +2653,7 @@ module.exports = support;
 });;loader.register('chaplin/lib/composition', function(e, r, module) {
 'use strict';
 
-var Backbone, Composition, EventBroker, _,
+var Backbone, Composition, EventBroker, has, _,
   __hasProp = {}.hasOwnProperty;
 
 _ = loader('underscore');
@@ -2666,6 +2661,8 @@ _ = loader('underscore');
 Backbone = loader('backbone');
 
 EventBroker = loader('chaplin/lib/event_broker');
+
+has = Object.prototype.hasOwnProperty;
 
 module.exports = Composition = (function() {
 
@@ -2705,7 +2702,7 @@ module.exports = Composition = (function() {
     this._stale = value;
     for (name in this) {
       item = this[name];
-      if (item && item !== this && typeof item === 'object' && 'stale' in item) {
+      if (item && item !== this && typeof item === 'object' && has.call(item, 'stale')) {
         item.stale = value;
       }
     }
