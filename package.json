@@ -1,6 +1,6 @@
 {
   "name": "chaplin",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Chaplin.js",
   "main": "chaplin.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "url": "https://github.com/chaplinjs/downloads/issues"
   },
   "dependencies": {
-    "backbone": "~1.0.0",
+    "backbone": "~1.1.0",
     "underscore": "~1.5.1"
   }
 }
