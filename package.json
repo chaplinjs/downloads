@@ -16,7 +16,7 @@
     "url": "https://github.com/chaplinjs/downloads/issues"
   },
   "dependencies": {
-    "backbone": "~1.0.0",
-    "underscore": "~1.5.1"
+    "backbone": "~1.1.2",
+    "underscore": "~1.6.0"
   }
 }
