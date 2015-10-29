@@ -1,5 +1,5 @@
 /*!
- * Chaplin 1.0.1
+ * Chaplin 1.1.0
  *
  * Chaplin may be freely distributed under the MIT license.
  * For all details and documentation:
@@ -34,7 +34,6 @@ var loader = (function() {
 
 loader.register('chaplin/application', function(e, r, module) {
 'use strict';
-
 var Application, Backbone, Composer, Dispatcher, EventBroker, Layout, Router, mediator, _;
 
 _ = loader('underscore');
@@ -54,7 +53,6 @@ EventBroker = loader('chaplin/lib/event_broker');
 mediator = loader('chaplin/mediator');
 
 module.exports = Application = (function() {
-
   Application.extend = Backbone.Model.extend;
 
   _.extend(Application.prototype, EventBroker);
@@ -98,11 +96,10 @@ module.exports = Application = (function() {
   };
 
   Application.prototype.initLayout = function(options) {
-    var _ref;
     if (options == null) {
       options = {};
     }
-    if ((_ref = options.title) == null) {
+    if (options.title == null) {
       options.title = this.title;
     }
     return this.layout = new Layout(options);
@@ -152,9 +149,10 @@ module.exports = Application = (function() {
 
 })();
 
+//# sourceMappingURL=application.js.map
+
 });;loader.register('chaplin/mediator', function(e, r, module) {
 'use strict';
-
 var Backbone, handlers, mediator, support, utils, _,
   __slice = [].slice;
 
@@ -237,9 +235,10 @@ utils.readonly(mediator, 'seal');
 
 module.exports = mediator;
 
+//# sourceMappingURL=mediator.js.map
+
 });;loader.register('chaplin/dispatcher', function(e, r, module) {
 'use strict';
-
 var Backbone, Dispatcher, EventBroker, mediator, utils, _;
 
 _ = loader('underscore');
@@ -253,7 +252,6 @@ utils = loader('chaplin/lib/utils');
 EventBroker = loader('chaplin/lib/event_broker');
 
 module.exports = Dispatcher = (function() {
-
   Dispatcher.extend = Backbone.Model.extend;
 
   _.extend(Dispatcher.prototype, EventBroker);
@@ -284,11 +282,10 @@ module.exports = Dispatcher = (function() {
   };
 
   Dispatcher.prototype.dispatch = function(route, params, options) {
-    var _ref, _ref1,
-      _this = this;
+    var _ref, _ref1;
     params = params ? _.extend({}, params) : {};
     options = options ? _.extend({}, options) : {};
-    if (!(options.query != null)) {
+    if (options.query == null) {
       options.query = {};
     }
     if (options.forceStartup !== true) {
@@ -297,22 +294,28 @@ module.exports = Dispatcher = (function() {
     if (!options.forceStartup && ((_ref = this.currentRoute) != null ? _ref.controller : void 0) === route.controller && ((_ref1 = this.currentRoute) != null ? _ref1.action : void 0) === route.action && _.isEqual(this.currentParams, params) && _.isEqual(this.currentQuery, options.query)) {
       return;
     }
-    return this.loadController(route.controller, function(Controller) {
-      return _this.controllerLoaded(route, params, options, Controller);
-    });
+    return this.loadController(route.controller, (function(_this) {
+      return function(Controller) {
+        return _this.controllerLoaded(route, params, options, Controller);
+      };
+    })(this));
   };
 
   Dispatcher.prototype.loadController = function(name, handler) {
-    var fileName, moduleName,
-      _this = this;
+    var fileName, moduleName;
+    if (_.isObject(name)) {
+      return handler(name);
+    }
     fileName = name + this.settings.controllerSuffix;
     moduleName = this.settings.controllerPath + fileName;
     if (typeof define !== "undefined" && define !== null ? define.amd : void 0) {
       return require([moduleName], handler);
     } else {
-      return setTimeout(function() {
-        return handler(require(moduleName));
-      }, 0);
+      return setTimeout((function(_this) {
+        return function() {
+          return handler(require(moduleName));
+        };
+      })(this), 0);
     }
   };
 
@@ -341,8 +344,8 @@ module.exports = Dispatcher = (function() {
       this.currentController.dispose(params, route, options);
     }
     this.currentController = controller;
-    this.currentParams = params;
-    this.currentQuery = options.query;
+    this.currentParams = _.clone(params);
+    this.currentQuery = _.clone(options.query);
     controller[route.action](params, route, options);
     if (controller.redirected) {
       return;
@@ -351,20 +354,21 @@ module.exports = Dispatcher = (function() {
   };
 
   Dispatcher.prototype.executeBeforeAction = function(controller, route, params, options) {
-    var before, executeAction, promise,
-      _this = this;
+    var before, executeAction, promise;
     before = controller.beforeAction;
-    executeAction = function() {
-      if (controller.redirected || _this.currentRoute && route === _this.currentRoute) {
+    executeAction = (function(_this) {
+      return function() {
+        if (controller.redirected || _this.currentRoute && route === _this.currentRoute) {
+          _this.nextPreviousRoute = _this.nextCurrentRoute = null;
+          controller.dispose();
+          return;
+        }
+        _this.previousRoute = _this.nextPreviousRoute;
+        _this.currentRoute = _this.nextCurrentRoute;
         _this.nextPreviousRoute = _this.nextCurrentRoute = null;
-        controller.dispose();
-        return;
-      }
-      _this.previousRoute = _this.nextPreviousRoute;
-      _this.currentRoute = _this.nextCurrentRoute;
-      _this.nextPreviousRoute = _this.nextCurrentRoute = null;
-      return _this.executeAction(controller, route, params, options);
-    };
+        return _this.executeAction(controller, route, params, options);
+      };
+    })(this);
     if (!before) {
       executeAction();
       return;
@@ -395,9 +399,10 @@ module.exports = Dispatcher = (function() {
 
 })();
 
+//# sourceMappingURL=dispatcher.js.map
+
 });;loader.register('chaplin/composer', function(e, r, module) {
 'use strict';
-
 var Backbone, Composer, Composition, EventBroker, mediator, utils, _;
 
 _ = loader('underscore');
@@ -413,7 +418,6 @@ Composition = loader('chaplin/lib/composition');
 EventBroker = loader('chaplin/lib/event_broker');
 
 module.exports = Composer = (function() {
-
   Composer.extend = Backbone.Model.extend;
 
   _.extend(Composer.prototype, EventBroker);
@@ -476,7 +480,7 @@ module.exports = Composer = (function() {
 
   Composer.prototype._compose = function(name, options) {
     var composition, current, isPromise, returned;
-    if (typeof options.compose !== 'function' && !(options.composition != null)) {
+    if (typeof options.compose !== 'function' && (options.composition == null)) {
       throw new Error('Composer#compose was used incorrectly');
     }
     if (options.composition != null) {
@@ -553,9 +557,10 @@ module.exports = Composer = (function() {
 
 })();
 
+//# sourceMappingURL=composer.js.map
+
 });;loader.register('chaplin/controllers/controller', function(e, r, module) {
 'use strict';
-
 var Backbone, Controller, EventBroker, mediator, utils, _,
   __slice = [].slice,
   __hasProp = {}.hasOwnProperty;
@@ -571,7 +576,6 @@ utils = loader('chaplin/lib/utils');
 mediator = loader('chaplin/mediator');
 
 module.exports = Controller = (function() {
-
   Controller.extend = Backbone.Model.extend;
 
   _.extend(Controller.prototype, Backbone.Events);
@@ -635,9 +639,10 @@ module.exports = Controller = (function() {
 
 })();
 
+//# sourceMappingURL=controller.js.map
+
 });;loader.register('chaplin/models/collection', function(e, r, module) {
 'use strict';
-
 var Backbone, Collection, EventBroker, Model, utils, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -653,7 +658,6 @@ Model = loader('chaplin/models/model');
 utils = loader('chaplin/lib/utils');
 
 module.exports = Collection = (function(_super) {
-
   __extends(Collection, _super);
 
   function Collection() {
@@ -695,9 +699,10 @@ module.exports = Collection = (function(_super) {
 
 })(Backbone.Collection);
 
+//# sourceMappingURL=collection.js.map
+
 });;loader.register('chaplin/models/model', function(e, r, module) {
 'use strict';
-
 var Backbone, EventBroker, Model, serializeAttributes, serializeModelAttributes, utils, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -745,7 +750,6 @@ serializeModelAttributes = function(model, currentModel, modelStack) {
 };
 
 module.exports = Model = (function(_super) {
-
   __extends(Model, _super);
 
   function Model() {
@@ -765,11 +769,18 @@ module.exports = Model = (function(_super) {
   Model.prototype.disposed = false;
 
   Model.prototype.dispose = function() {
-    var prop, properties, _i, _len;
+    var prop, properties, _i, _len, _ref;
     if (this.disposed) {
       return;
     }
     this.trigger('dispose', this);
+    if ((_ref = this.collection) != null) {
+      if (typeof _ref.remove === "function") {
+        _ref.remove(this, {
+          silent: true
+        });
+      }
+    }
     this.unsubscribeAllEvents();
     this.stopListening();
     this.off();
@@ -786,9 +797,10 @@ module.exports = Model = (function(_super) {
 
 })(Backbone.Model);
 
+//# sourceMappingURL=model.js.map
+
 });;loader.register('chaplin/views/layout', function(e, r, module) {
 'use strict';
-
 var $, Backbone, EventBroker, Layout, View, mediator, utils, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -809,7 +821,6 @@ View = loader('chaplin/views/view');
 $ = Backbone.$;
 
 module.exports = Layout = (function(_super) {
-
   __extends(Layout, _super);
 
   Layout.prototype.el = 'body';
@@ -829,7 +840,6 @@ module.exports = Layout = (function(_super) {
       options = {};
     }
     this.openLink = __bind(this.openLink, this);
-
     this.globalRegions = [];
     this.title = options.title;
     if (options.regions) {
@@ -866,8 +876,7 @@ module.exports = Layout = (function(_super) {
   };
 
   Layout.prototype.adjustTitle = function(subtitle) {
-    var title,
-      _this = this;
+    var title;
     if (subtitle == null) {
       subtitle = '';
     }
@@ -875,10 +884,12 @@ module.exports = Layout = (function(_super) {
       title: this.title,
       subtitle: subtitle
     });
-    setTimeout(function() {
-      document.title = title;
-      return _this.publishEvent('adjustTitle', subtitle, title);
-    }, 50);
+    setTimeout((function(_this) {
+      return function() {
+        document.title = title;
+        return _this.publishEvent('adjustTitle', subtitle, title);
+      };
+    })(this), 50);
     return title;
   };
 
@@ -909,7 +920,7 @@ module.exports = Layout = (function(_super) {
 
   Layout.prototype.isExternalLink = function(link) {
     var _ref, _ref1;
-    return link.target === '_blank' || link.rel === 'external' || ((_ref = link.protocol) !== 'http:' && _ref !== 'https:' && _ref !== 'file:') || ((_ref1 = link.hostname) !== location.hostname && _ref1 !== '');
+    return link.target === '_blank' || link.rel === 'external' || ((_ref = link.protocol) !== 'http:' && _ref !== 'https:' && _ref !== 'file:' && _ref !== 'ms-appx:') || ((_ref1 = link.hostname) !== location.hostname && _ref1 !== '');
   };
 
   Layout.prototype.openLink = function(event) {
@@ -920,7 +931,7 @@ module.exports = Layout = (function(_super) {
     el = $ ? event.currentTarget : event.delegateTarget;
     isAnchor = el.nodeName === 'A';
     href = el.getAttribute('href') || el.getAttribute('data-href') || null;
-    if (!(href != null) || href === '' || href.charAt(0) === '#') {
+    if ((href == null) || href === '' || href.charAt(0) === '#') {
       return;
     }
     skipRouting = this.settings.skipRouting;
@@ -932,7 +943,7 @@ module.exports = Layout = (function(_super) {
     if (external) {
       if (this.settings.openExternalToBlank) {
         event.preventDefault();
-        window.open(href);
+        this.openWindow(href, el);
       }
       return;
     }
@@ -940,6 +951,10 @@ module.exports = Layout = (function(_super) {
       url: href
     });
     event.preventDefault();
+  };
+
+  Layout.prototype.openWindow = function(href, el) {
+    return window.open(href);
   };
 
   Layout.prototype.registerRegionHandler = function(instance, name, selector) {
@@ -1051,9 +1066,10 @@ module.exports = Layout = (function(_super) {
 
 })(View);
 
+//# sourceMappingURL=layout.js.map
+
 });;loader.register('chaplin/views/view', function(e, r, module) {
 'use strict';
-
 var $, Backbone, EventBroker, View, attach, bind, mediator, setHTML, utils, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1084,7 +1100,9 @@ bind = (function() {
 setHTML = (function() {
   if ($) {
     return function(elem, html) {
-      return elem.html(html);
+      elem.empty();
+      elem.append(html);
+      return html;
     };
   } else {
     return function(elem, html) {
@@ -1118,7 +1136,6 @@ attach = (function() {
 })();
 
 module.exports = View = (function(_super) {
-
   __extends(View, _super);
 
   _.extend(View.prototype, EventBroker);
@@ -1148,8 +1165,7 @@ module.exports = View = (function(_super) {
   View.prototype.optionNames = ['autoAttach', 'autoRender', 'container', 'containerMethod', 'region', 'regions', 'noWrap'];
 
   function View(options) {
-    var optName, optValue, region, render,
-      _this = this;
+    var optName, optValue, region, render;
     if (options) {
       for (optName in options) {
         optValue = options[optName];
@@ -1159,16 +1175,19 @@ module.exports = View = (function(_super) {
       }
     }
     render = this.render;
-    this.render = function() {
-      if (_this.disposed) {
-        return false;
-      }
-      render.apply(_this, arguments);
-      if (_this.autoAttach) {
-        _this.attach.apply(_this, arguments);
-      }
-      return _this;
-    };
+    this.render = (function(_this) {
+      return function() {
+        var returnValue;
+        if (_this.disposed) {
+          return false;
+        }
+        returnValue = render.apply(_this, arguments);
+        if (_this.autoAttach) {
+          _this.attach.apply(_this, arguments);
+        }
+        return returnValue;
+      };
+    })(this);
     this.subviews = [];
     this.subviewsByName = {};
     if (this.noWrap) {
@@ -1188,11 +1207,13 @@ module.exports = View = (function(_super) {
       this.listenTo(this.model, 'dispose', this.dispose);
     }
     if (this.collection) {
-      this.listenTo(this.collection, 'dispose', function(subject) {
-        if (!subject || subject === _this.collection) {
-          return _this.dispose();
-        }
-      });
+      this.listenTo(this.collection, 'dispose', (function(_this) {
+        return function(subject) {
+          if (!subject || subject === _this.collection) {
+            return _this.dispose();
+          }
+        };
+      })(this));
     }
     if (this.regions != null) {
       mediator.execute('region:register', this);
@@ -1203,8 +1224,8 @@ module.exports = View = (function(_super) {
   }
 
   View.prototype.delegate = function(eventName, second, third) {
-    var bound, event, events, handler, list, selector;
-    if (Backbone.utils) {
+    var bound, event, events, handler, list, selector, _ref;
+    if (Backbone.utils && ((_ref = Backbone.utils) != null ? _ref.delegate : void 0)) {
       return Backbone.utils.delegate(this, eventName, second, third);
     }
     if (typeof eventName !== 'string') {
@@ -1225,11 +1246,11 @@ module.exports = View = (function(_super) {
       throw new TypeError('View#delegate: ' + 'handler argument must be function');
     }
     list = (function() {
-      var _i, _len, _ref, _results;
-      _ref = eventName.split(' ');
+      var _i, _len, _ref1, _results;
+      _ref1 = eventName.split(' ');
       _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        event = _ref[_i];
+      for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+        event = _ref1[_i];
         _results.push("" + event + ".delegate" + this.cid);
       }
       return _results;
@@ -1278,8 +1299,8 @@ module.exports = View = (function(_super) {
   };
 
   View.prototype.undelegate = function(eventName, second, third) {
-    var event, events, handler, list, selector;
-    if (Backbone.utils) {
+    var event, events, handler, list, selector, _ref;
+    if (Backbone.utils && ((_ref = Backbone.utils) != null ? _ref.undelegate : void 0)) {
       return Backbone.utils.undelegate(this, eventName, second, third);
     }
     if (eventName) {
@@ -1300,11 +1321,11 @@ module.exports = View = (function(_super) {
         handler = third;
       }
       list = (function() {
-        var _i, _len, _ref, _results;
-        _ref = eventName.split(' ');
+        var _i, _len, _ref1, _results;
+        _ref1 = eventName.split(' ');
         _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          event = _ref[_i];
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          event = _ref1[_i];
           _results.push("" + event + ".delegate" + this.cid);
         }
         return _results;
@@ -1503,9 +1524,10 @@ module.exports = View = (function(_super) {
 
 })(Backbone.View);
 
+//# sourceMappingURL=view.js.map
+
 });;loader.register('chaplin/views/collection_view', function(e, r, module) {
 'use strict';
-
 var $, Backbone, CollectionView, View, addClass, endAnimation, filterChildren, insertView, startAnimation, toggleElement, utils, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
@@ -1590,7 +1612,7 @@ endAnimation = (function() {
   } else {
     return function(elem, duration) {
       elem.style.transition = "opacity " + (duration / 1000) + "s";
-      return elem.opacity = 1;
+      return elem.style.opacity = 1;
     };
   }
 })();
@@ -1601,7 +1623,7 @@ insertView = (function() {
       var children, childrenLength, insertInMiddle, isEnd, method;
       insertInMiddle = (0 < position && position < length);
       isEnd = function(length) {
-        return length === 0 || position === length;
+        return length === 0 || position >= length;
       };
       if (insertInMiddle || itemSelector) {
         children = list.children(itemSelector);
@@ -1656,7 +1678,6 @@ insertView = (function() {
 })();
 
 module.exports = CollectionView = (function(_super) {
-
   __extends(CollectionView, _super);
 
   CollectionView.prototype.itemView = null;
@@ -1702,13 +1723,9 @@ module.exports = CollectionView = (function(_super) {
 
   function CollectionView(options) {
     this.renderAllItems = __bind(this.renderAllItems, this);
-
     this.toggleFallback = __bind(this.toggleFallback, this);
-
     this.itemsReset = __bind(this.itemsReset, this);
-
     this.itemRemoved = __bind(this.itemRemoved, this);
-
     this.itemAdded = __bind(this.itemAdded, this);
     this.visibleItems = [];
     CollectionView.__super__.constructor.apply(this, arguments);
@@ -1746,7 +1763,7 @@ module.exports = CollectionView = (function(_super) {
   CollectionView.prototype.render = function() {
     var listSelector;
     CollectionView.__super__.render.apply(this, arguments);
-    listSelector = _.result(this, 'listSelector');
+    listSelector = typeof this.listSelector === 'function' ? this.listSelector() : this.listSelector;
     if ($) {
       this.$list = listSelector ? this.$(listSelector) : this.$el;
     } else {
@@ -1826,25 +1843,26 @@ module.exports = CollectionView = (function(_super) {
   };
 
   CollectionView.prototype.filter = function(filterer, filterCallback) {
-    var hasItemViews, included, index, item, view, _i, _len, _ref,
-      _this = this;
+    var hasItemViews, included, index, item, view, _i, _len, _ref;
     if (typeof filterer === 'function' || filterer === null) {
       this.filterer = filterer;
     }
     if (typeof filterCallback === 'function' || filterCallback === null) {
       this.filterCallback = filterCallback;
     }
-    hasItemViews = (function() {
-      var name;
-      if (_this.subviews.length > 0) {
-        for (name in _this.subviewsByName) {
-          if (name.slice(0, 9) === 'itemView:') {
-            return true;
+    hasItemViews = (function(_this) {
+      return function() {
+        var name;
+        if (_this.subviews.length > 0) {
+          for (name in _this.subviewsByName) {
+            if (name.slice(0, 9) === 'itemView:') {
+              return true;
+            }
           }
         }
-      }
-      return false;
-    })();
+        return false;
+      };
+    })(this)();
     if (hasItemViews) {
       _ref = this.collection.models;
       for (index = _i = 0, _len = _ref.length; _i < _len; index = ++_i) {
@@ -1918,8 +1936,7 @@ module.exports = CollectionView = (function(_super) {
   };
 
   CollectionView.prototype.insertView = function(item, view, position, enableAnimation) {
-    var elem, included, length, list,
-      _this = this;
+    var elem, included, length, list;
     if (enableAnimation == null) {
       enableAnimation = true;
     }
@@ -1939,14 +1956,18 @@ module.exports = CollectionView = (function(_super) {
     }
     length = this.collection.length;
     list = $ ? this.$list : this.list;
-    insertView(list, elem, position, length, this.itemSelector);
-    view.trigger('addedToParent');
+    if (included) {
+      insertView(list, elem, position, length, this.itemSelector);
+      view.trigger('addedToParent');
+    }
     this.updateVisibleItems(item, included);
     if (included && enableAnimation) {
       if (this.useCssAnimation) {
-        setTimeout((function() {
-          return addClass(elem, _this.animationEndClass);
-        }), 0);
+        setTimeout(((function(_this) {
+          return function() {
+            return addClass(elem, _this.animationEndClass);
+          };
+        })(this)), 0);
       } else {
         endAnimation(elem, this.animationDuration);
       }
@@ -1997,12 +2018,13 @@ module.exports = CollectionView = (function(_super) {
 
 })(View);
 
+//# sourceMappingURL=collection_view.js.map
+
 });;loader.register('chaplin/lib/route', function(e, r, module) {
 'use strict';
-
-var Backbone, Controller, EventBroker, Route, utils, _,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty;
+var Backbone, Controller, EventBroker, Route, isEmpty, utils, _,
+  __hasProp = {}.hasOwnProperty,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 _ = loader('underscore');
 
@@ -2013,6 +2035,16 @@ EventBroker = loader('chaplin/lib/event_broker');
 Controller = loader('chaplin/controllers/controller');
 
 utils = loader('chaplin/lib/utils');
+
+isEmpty = function(object) {
+  var key, value;
+  for (key in object) {
+    if (!__hasProp.call(object, key)) continue;
+    value = object[key];
+    return false;
+  }
+  return true;
+};
 
 module.exports = Route = (function() {
   var escapeRegExp, optionalRegExp, paramRegExp, processTrailingSlash;
@@ -2043,19 +2075,14 @@ module.exports = Route = (function() {
   };
 
   function Route(pattern, controller, action, options) {
-    var _ref;
     this.pattern = pattern;
     this.controller = controller;
     this.action = action;
     this.handler = __bind(this.handler, this);
-
     this.replaceParams = __bind(this.replaceParams, this);
-
     this.parseOptionalPortion = __bind(this.parseOptionalPortion, this);
-
     if (typeof this.pattern !== 'string') {
-      throw new Error('Route: RegExps are not supported.\
-        Use strings with :names and `constraints` option of route');
+      throw new Error('Route: RegExps are not supported. Use strings with :names and `constraints` option of route');
     }
     this.options = options ? _.extend({}, options) : {};
     if (this.options.paramsInQS !== false) {
@@ -2067,7 +2094,7 @@ module.exports = Route = (function() {
     if (this.name && this.name.indexOf('#') !== -1) {
       throw new Error('Route: "#" cannot be used in name');
     }
-    if ((_ref = this.name) == null) {
+    if (this.name == null) {
       this.name = this.controller + '#' + this.action;
     }
     this.allParams = [];
@@ -2139,22 +2166,22 @@ module.exports = Route = (function() {
     if (this.options.paramsInQS !== false) {
       _.extend(query, remainingParams);
     }
-    if (!_.isEmpty(query)) {
+    if (!isEmpty(query)) {
       url += '?' + utils.queryParams.stringify(query);
     }
     return url;
   };
 
   Route.prototype.normalizeParams = function(params) {
-    var paramIndex, paramName, paramsHash, _i, _len, _ref;
+    var paramIndex, paramName, paramsHash, routeParams, _i, _ref;
     if (utils.isArray(params)) {
       if (params.length < this.requiredParams.length) {
         return false;
       }
       paramsHash = {};
-      _ref = this.requiredParams;
-      for (paramIndex = _i = 0, _len = _ref.length; _i < _len; paramIndex = ++_i) {
-        paramName = _ref[paramIndex];
+      routeParams = this.requiredParams.concat(this.optionalParams);
+      for (paramIndex = _i = 0, _ref = params.length - 1; _i <= _ref; paramIndex = _i += 1) {
+        paramName = routeParams[paramIndex];
         paramsHash[paramName] = params[paramIndex];
       }
       if (!this.testConstraints(paramsHash)) {
@@ -2200,28 +2227,32 @@ module.exports = Route = (function() {
   };
 
   Route.prototype.createRegExp = function() {
-    var pattern,
-      _this = this;
+    var pattern;
     pattern = this.pattern;
     pattern = pattern.replace(escapeRegExp, '\\$&');
-    this.replaceParams(pattern, function(match, param) {
-      return _this.allParams.push(param);
-    });
+    this.replaceParams(pattern, (function(_this) {
+      return function(match, param) {
+        return _this.allParams.push(param);
+      };
+    })(this));
     pattern = pattern.replace(optionalRegExp, this.parseOptionalPortion);
-    pattern = this.replaceParams(pattern, function(match, param) {
-      _this.requiredParams.push(param);
-      return _this.paramCapturePattern(match);
-    });
-    return this.regExp = RegExp("^" + pattern + "(?=\\/*(?=\\?|$))");
+    pattern = this.replaceParams(pattern, (function(_this) {
+      return function(match, param) {
+        _this.requiredParams.push(param);
+        return _this.paramCapturePattern(match);
+      };
+    })(this));
+    return this.regExp = RegExp("^" + pattern + "(?=/*(?=\\?|$))");
   };
 
   Route.prototype.parseOptionalPortion = function(match, optionalPortion) {
-    var portion,
-      _this = this;
-    portion = this.replaceParams(optionalPortion, function(match, param) {
-      _this.optionalParams.push(param);
-      return _this.paramCapturePattern(match);
-    });
+    var portion;
+    portion = this.replaceParams(optionalPortion, (function(_this) {
+      return function(match, param) {
+        _this.optionalParams.push(param);
+        return _this.paramCapturePattern(match);
+      };
+    })(this));
     return "(?:" + portion + ")?";
   };
 
@@ -2259,7 +2290,7 @@ module.exports = Route = (function() {
       path = this.reverse(params);
     } else {
       _ref = pathParams.split('?'), path = _ref[0], query = _ref[1];
-      if (!(query != null)) {
+      if (query == null) {
         query = '';
       } else {
         options.query = utils.queryParams.parse(query);
@@ -2295,9 +2326,10 @@ module.exports = Route = (function() {
 
 })();
 
+//# sourceMappingURL=route.js.map
+
 });;loader.register('chaplin/lib/router', function(e, r, module) {
 'use strict';
-
 var Backbone, EventBroker, History, Route, Router, mediator, utils, _,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -2316,7 +2348,6 @@ Route = loader('chaplin/lib/route');
 utils = loader('chaplin/lib/utils');
 
 module.exports = Router = (function() {
-
   Router.extend = Backbone.Model.extend;
 
   _.extend(Router.prototype, EventBroker);
@@ -2325,7 +2356,6 @@ module.exports = Router = (function() {
     var isWebFile;
     this.options = options != null ? options : {};
     this.match = __bind(this.match, this);
-
     isWebFile = window.location.protocol !== 'file:';
     _.defaults(this.options, {
       pushState: isWebFile,
@@ -2343,8 +2373,7 @@ module.exports = Router = (function() {
   }
 
   Router.prototype.oldEventError = function() {
-    throw new Error('!router:route and !router:routeByName events were removed.\
-  Use `Chaplin.utils.redirectTo`');
+    throw new Error('!router:route and !router:routeByName events were removed. Use `Chaplin.utils.redirectTo`');
   };
 
   Router.prototype.oldURLEventError = function() {
@@ -2497,9 +2526,10 @@ module.exports = Router = (function() {
 
 })();
 
+//# sourceMappingURL=router.js.map
+
 });;loader.register('chaplin/lib/history', function(e, r, module) {
 'use strict';
-
 var Backbone, History, isExplorer, rootStripper, routeStripper, trailingSlash, _,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2517,7 +2547,6 @@ isExplorer = /msie [\w.]+/;
 trailingSlash = /\/$/;
 
 History = (function(_super) {
-
   __extends(History, _super);
 
   function History() {
@@ -2526,7 +2555,7 @@ History = (function(_super) {
 
   History.prototype.getFragment = function(fragment, forcePushState) {
     var root;
-    if (!(fragment != null)) {
+    if (fragment == null) {
       if (this._hasPushState || !this._wantsHashChange || forcePushState) {
         fragment = this.location.pathname + this.location.search;
         root = this.root.replace(trailingSlash, '');
@@ -2599,7 +2628,7 @@ History = (function(_super) {
       return false;
     }
     this.fragment = fragment;
-    if (fragment.length === 0 && url !== '/' && (url !== this.root || this.options.trailing !== true)) {
+    if (fragment.length === 0 && url !== this.root) {
       url = url.slice(0, -1);
     }
     if (this._hasPushState) {
@@ -2628,9 +2657,10 @@ History = (function(_super) {
 
 module.exports = Backbone.$ ? History : Backbone.History;
 
+//# sourceMappingURL=history.js.map
+
 });;loader.register('chaplin/lib/event_broker', function(e, r, module) {
 'use strict';
-
 var EventBroker, mediator,
   __slice = [].slice;
 
@@ -2685,14 +2715,15 @@ if (typeof Object.freeze === "function") {
 
 module.exports = EventBroker;
 
+//# sourceMappingURL=event_broker.js.map
+
 });;loader.register('chaplin/lib/support', function(e, r, module) {
 'use strict';
-
 var support;
 
 support = {
   propertyDescriptors: (function() {
-    var o;
+    var error, o;
     if (!(typeof Object.defineProperty === 'function' && typeof Object.defineProperties === 'function')) {
       return false;
     }
@@ -2702,7 +2733,8 @@ support = {
         value: 'bar'
       });
       return o.foo === 'bar';
-    } catch (error) {
+    } catch (_error) {
+      error = _error;
       return false;
     }
   })()
@@ -2710,9 +2742,10 @@ support = {
 
 module.exports = support;
 
+//# sourceMappingURL=support.js.map
+
 });;loader.register('chaplin/lib/composition', function(e, r, module) {
 'use strict';
-
 var Backbone, Composition, EventBroker, has, _,
   __hasProp = {}.hasOwnProperty;
 
@@ -2725,7 +2758,6 @@ EventBroker = loader('chaplin/lib/event_broker');
 has = Object.prototype.hasOwnProperty;
 
 module.exports = Composition = (function() {
-
   Composition.extend = Backbone.Model.extend;
 
   _.extend(Composition.prototype, Backbone.Events);
@@ -2800,9 +2832,10 @@ module.exports = Composition = (function() {
 
 })();
 
+//# sourceMappingURL=composition.js.map
+
 });;loader.register('chaplin/lib/sync_machine', function(e, r, module) {
 'use strict';
-
 var STATE_CHANGE, SYNCED, SYNCING, SyncMachine, UNSYNCED, event, _fn, _i, _len, _ref;
 
 UNSYNCED = 'unsynced';
@@ -2887,9 +2920,10 @@ if (typeof Object.freeze === "function") {
 
 module.exports = SyncMachine;
 
+//# sourceMappingURL=sync_machine.js.map
+
 });;loader.register('chaplin/lib/utils', function(e, r, module) {
 'use strict';
-
 var support, utils, _,
   __slice = [].slice,
   __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
@@ -3060,8 +3094,9 @@ if (typeof Object.seal === "function") {
 
 module.exports = utils;
 
-});;loader.register('chaplin', function(e, r, module) {
+//# sourceMappingURL=utils.js.map
 
+});;loader.register('chaplin', function(e, r, module) {
 module.exports = {
   Application: loader('chaplin/application'),
   mediator: loader('chaplin/mediator'),
@@ -3081,6 +3116,8 @@ module.exports = {
   SyncMachine: loader('chaplin/lib/sync_machine'),
   utils: loader('chaplin/lib/utils')
 };
+
+//# sourceMappingURL=chaplin.js.map
 
 });
 var regDeps = function(Backbone, _) {
