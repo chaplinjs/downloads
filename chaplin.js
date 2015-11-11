@@ -1,5 +1,5 @@
 /*!
- * Chaplin 1.1.0
+ * Chaplin 1.1.1
  *
  * Chaplin may be freely distributed under the MIT license.
  * For all details and documentation:
@@ -303,7 +303,7 @@ module.exports = Dispatcher = (function() {
 
   Dispatcher.prototype.loadController = function(name, handler) {
     var fileName, moduleName;
-    if (_.isObject(name)) {
+    if (name && typeof name === 'object') {
       return handler(name);
     }
     fileName = name + this.settings.controllerSuffix;
@@ -344,8 +344,8 @@ module.exports = Dispatcher = (function() {
       this.currentController.dispose(params, route, options);
     }
     this.currentController = controller;
-    this.currentParams = _.clone(params);
-    this.currentQuery = _.clone(options.query);
+    this.currentParams = _.extend({}, params);
+    this.currentQuery = _.extend({}, options.query);
     controller[route.action](params, route, options);
     if (controller.redirected) {
       return;
